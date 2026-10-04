@@ -65,8 +65,8 @@ main {
 #searchInput {
     flex: 1;
     min-width: 300px;
-    height: 44px;
-    padding: 0 16px;
+    height: 38px;
+    padding: 0 14px;
 
     border: 1px solid #ddd7ce;
     border-radius: 10px;
@@ -95,10 +95,10 @@ main {
 #categoryFilter,
 #favoriteFilter,
 #sortFilter {
-    height: 44px;
+    height: 38px;
     min-width: 150px;
 
-    padding: 0 16px;
+    padding: 0 14px;
 
     border: 1px solid #ddd7ce;
     border-radius: 10px;
@@ -131,9 +131,9 @@ main {
 ============================== */
 
 .add-button {
-    height: 44px;
+    height: 38px;
 
-    padding: 13px 20px;
+    padding: 0 16px;
 
     border: none;
     border-radius: 10px;
@@ -158,9 +158,9 @@ main {
 
 
 .clear-button {
-    height: 44px;
+    height: 38px;
 
-    padding: 13px 20px;
+    padding: 0 16px;
 
     border: 1px solid #ddd7ce;
     border-radius: 10px;
@@ -508,10 +508,10 @@ main {
 
 
 .card-image .image-thumbnail {
-    width: 42px;
-    height: 42px;
+    width: 34px;
+    height: 34px;
 
-    flex: 0 0 42px;
+    flex: 0 0 34px;
 
     object-fit: cover;
 
@@ -553,6 +553,27 @@ main {
     gap: 8px;
 
     margin-top: 10px;
+}
+
+.image-preview-item {
+    position: relative;
+}
+
+.image-preview-item .image-preview {
+    margin-top: 0;
+}
+
+.remove-image-button {
+    display: block;
+    margin-top: 4px;
+    padding: 4px 8px;
+    border: 1px solid #ddd7ce;
+    border-radius: 6px;
+    background: #faf9f7;
+    color: #625b52;
+    font: inherit;
+    font-size: 11px;
+    cursor: pointer;
 }
 
 .image-preview {
@@ -756,7 +777,7 @@ main {
 
     fill: none;
 
-    stroke: #55514c;
+    stroke: #77716a;
 
     stroke-width: 1.8;
 
@@ -859,6 +880,17 @@ main {
 /* ==============================
    IMAGE UPLOAD
 ============================== */
+
+#stampDescription {
+    height: 76px;
+    min-height: 76px;
+    resize: vertical;
+}
+
+#addForm.editing-mode #stampDescription {
+    height: 56px;
+    min-height: 56px;
+}
 
 #stampImage {
     padding: 10px;
@@ -1321,7 +1353,8 @@ main {
    BODY / POPUP SCROLL
 ============================== */
 
-body.editing-popup-open {
+body.editing-popup-open,
+body.stamp-modal-open {
     overflow: hidden;
 }
 
@@ -1434,6 +1467,19 @@ body.editing-popup-open {
     line-height: 2;
 }
 
+.modal-info-icon {
+    display: inline-block;
+    width: 17px;
+    height: 17px;
+    margin-right: 3px;
+    vertical-align: -3px;
+    fill: none;
+    stroke: #77716a;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 .modal-price {
     margin-top: 15px;
 
@@ -1452,8 +1498,9 @@ body.editing-popup-open {
 }
 
 .modal-main-image-container {
+    position: relative;
     width: 100%;
-    height: 420px;
+    height: 280px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1468,6 +1515,43 @@ body.editing-popup-open {
     object-fit: contain;
 }
 
+/* Popup image navigation arrows */
+
+.modal-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    color: #3d3a35;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.modal-arrow:hover {
+    background: #ffffff;
+    transform: translateY(-50%) scale(1.08);
+}
+
+.modal-arrow-left {
+    left: 10px;
+}
+
+.modal-arrow-right {
+    right: 10px;
+}
+
 .modal-thumbnails {
     display: flex;
     justify-content: center;
@@ -1478,9 +1562,9 @@ body.editing-popup-open {
 }
 
 .modal-thumbnail {
-    width: 60px;
-    height: 60px;
-    flex: 0 0 60px;
+    width: 50px;
+    height: 50px;
+    flex: 0 0 50px;
     object-fit: cover;
     border-radius: 6px;
     border: 2px solid transparent;

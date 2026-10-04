@@ -8,6 +8,7 @@ const supabaseClient = window.supabase.createClient(
 
 let allStamps = [];
 let editingStampId = null;
+window.editingImageUrls = null;
 
 
 /* ==============================
@@ -1704,6 +1705,8 @@ function resetStampForm() {
 if (previewContainer) {
     previewContainer.remove();
 }
+
+    window.editingImageUrls = null;
 }
 
 /* ==============================
@@ -1867,22 +1870,15 @@ if (editingStampId !== null) {
 
     if (existingStamp) {
 
-        if (
+        if (Array.isArray(window.editingImageUrls)) {
+            imageUrls = [...window.editingImageUrls];
+        } else if (
             Array.isArray(existingStamp.image_urls) &&
             existingStamp.image_urls.length > 0
         ) {
-
-            imageUrls = [
-                ...existingStamp.image_urls
-            ];
-
-        } else if (
-            existingStamp.image_url
-        ) {
-
-            imageUrls = [
-                existingStamp.image_url
-            ];
+            imageUrls = [...existingStamp.image_urls];
+        } else if (existingStamp.image_url) {
+            imageUrls = [existingStamp.image_url];
         }
     }
 }
@@ -2331,6 +2327,8 @@ const existingImageUrls =
 
 if (existingImageUrls.length > 0) {
 
+    window.editingImageUrls = [...existingImageUrls];
+
     const previewContainer =
         document.createElement("div");
 
@@ -2340,28 +2338,32 @@ if (existingImageUrls.length > 0) {
     previewContainer.className =
         "image-preview-container";
 
-    existingImageUrls.forEach(imageUrl => {
+    existingImageUrls.forEach((imageUrl, index) => {
+        const item = document.createElement("div");
+        item.className = "image-preview-item";
 
-        const preview =
-            document.createElement("img");
+        const preview = document.createElement("img");
+        preview.className = "image-preview";
+        preview.src = imageUrl;
+        preview.alt = `Stamp image ${index + 1}`;
 
-        preview.className =
-            "image-preview";
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className = "remove-image-button";
+        removeButton.textContent = "Remove";
+        removeButton.setAttribute("aria-label", `Remove image ${index + 1}`);
+        removeButton.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            window.editingImageUrls = window.editingImageUrls.filter(url => url !== imageUrl);
+            item.remove();
+        });
 
-        preview.src =
-            imageUrl;
-
-        preview.alt =
-            "Stamp image";
-
-        previewContainer.appendChild(
-            preview
-        );
+        item.append(preview, removeButton);
+        previewContainer.appendChild(item);
     });
 
-    stampImageInput.parentElement.appendChild(
-        previewContainer
-    );
+    stampImageInput.parentElement.after(previewContainer);
 }
 
 
@@ -2635,6 +2637,7 @@ function openStampModal(id) {
         return;
     }
 
+    window.currentModalStampId = id;
 
     const modal =
         document.getElementById("stampModal");
@@ -2657,13 +2660,41 @@ const image =
             <div class="modal-image-gallery">
 
                 <div class="modal-main-image-container">
-                    <img
-                        id="modal-main-image"
-                        class="modal-main-image"
-                        src="${imageUrls[0]}"
-                        alt="${stamp.name || "Stamp"}"
-                    >
-                </div>
+
+    ${
+        imageUrls.length > 1
+            ? `
+                <button
+                    class="modal-arrow modal-arrow-left"
+                    onclick="event.stopPropagation(); changeModalImageByStep(-1);"
+                >
+                    ‹
+                </button>
+              `
+            : ""
+    }
+
+    <img
+        id="modal-main-image"
+        class="modal-main-image"
+        src="${imageUrls[0]}"
+        alt="${stamp.name || "Stamp"}"
+    >
+
+    ${
+        imageUrls.length > 1
+            ? `
+                <button
+                    class="modal-arrow modal-arrow-right"
+                    onclick="event.stopPropagation(); changeModalImageByStep(1);"
+                >
+                    ›
+                </button>
+              `
+            : ""
+    }
+
+</div>
 
                 ${
                     imageUrls.length > 1
@@ -2725,6 +2756,9 @@ const image =
             ? categories.join(" · ")
             : "";
 
+    const locationIcon = `<svg class="modal-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>`;
+    const dateIcon = `<svg class="modal-info-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>`;
+    const categoryIcon = `<svg class="modal-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20.6 13.4-7.2 7.2a2 2 0 0 1-2.8 0L3 13V4h9l8.6 6.6a2 2 0 0 1 0 2.8Z"></path><circle cx="7.5" cy="8.5" r="1"></circle></svg>`;
 
     modalContent.innerHTML = `
 
@@ -2742,13 +2776,13 @@ const image =
 
             ${
                 stamp.location
-                    ? `📍 ${stamp.location}<br>`
+                    ? `${locationIcon} ${stamp.location}<br>`
                     : ""
             }
 
             ${
                 stamp.collection_date
-                    ? `📅 ${formatDate(
+                    ? `${dateIcon} ${formatDate(
                         stamp.collection_date
                     )}<br>`
                     : ""
@@ -2756,7 +2790,7 @@ const image =
 
             ${
                 categoryText
-                    ? `🏷️ ${categoryText}<br>`
+                    ? `${categoryIcon} ${categoryText}<br>`
                     : ""
             }
 
@@ -2771,6 +2805,7 @@ const image =
 
 
     modal.style.display = "flex";
+    document.body.classList.add("stamp-modal-open");
 }
 
 function changeModalImage(imageUrl, thumbnail) {
@@ -2800,15 +2835,90 @@ function changeModalImage(imageUrl, thumbnail) {
     thumbnail.classList.add("active");
 }
 
+function changeModalImageByStep(step) {
+
+    const stampId =
+        window.currentModalStampId;
+
+    if (!stampId) {
+        return;
+    }
+
+    const stamp =
+        allStamps.find(
+            item => item.id === stampId
+        );
+
+    if (!stamp) {
+        return;
+    }
+
+    const imageUrls =
+        Array.isArray(stamp.image_urls) &&
+        stamp.image_urls.length > 0
+            ? stamp.image_urls
+            : stamp.image_url
+                ? [stamp.image_url]
+                : [];
+
+    if (imageUrls.length <= 1) {
+        return;
+    }
+
+    const mainImage =
+        document.getElementById(
+            "modal-main-image"
+        );
+
+    if (!mainImage) {
+        return;
+    }
+
+    let currentIndex =
+        imageUrls.indexOf(
+            mainImage.src
+        );
+
+    if (currentIndex === -1) {
+        currentIndex = 0;
+    }
+
+    let newIndex =
+        currentIndex + step;
+
+    if (newIndex < 0) {
+        newIndex =
+            imageUrls.length - 1;
+    }
+
+    if (newIndex >= imageUrls.length) {
+        newIndex = 0;
+    }
+
+    mainImage.src =
+        imageUrls[newIndex];
+
+    const thumbnails =
+        document.querySelectorAll(
+            ".modal-thumbnail"
+        );
+
+    thumbnails.forEach((thumbnail, index) => {
+        thumbnail.classList.toggle(
+            "active",
+            index === newIndex
+        );
+    });
+}
+
 /* ==============================
    CLOSE DETAILS POPUP
 ============================== */
 
 document.getElementById("modalClose")
     .addEventListener("click", () => {
-
-        document.getElementById("stampModal")
-            .style.display = "none";
+        document.getElementById("stampModal").style.display = "none";
+        document.body.classList.remove("stamp-modal-open");
     });
 
 
@@ -2821,6 +2931,7 @@ document.getElementById("stampModal")
 
             document.getElementById("stampModal")
                 .style.display = "none";
+            document.body.classList.remove("stamp-modal-open");
         }
     });
 
