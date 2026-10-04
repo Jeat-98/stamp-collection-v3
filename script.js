@@ -8,7 +8,6 @@ const supabaseClient = window.supabase.createClient(
 
 let allStamps = [];
 let editingStampId = null;
-window.editingImageUrls = null;
 
 
 /* ==============================
@@ -1705,8 +1704,6 @@ function resetStampForm() {
 if (previewContainer) {
     previewContainer.remove();
 }
-
-    window.editingImageUrls = null;
 }
 
 /* ==============================
@@ -1870,15 +1867,22 @@ if (editingStampId !== null) {
 
     if (existingStamp) {
 
-        if (Array.isArray(window.editingImageUrls)) {
-            imageUrls = [...window.editingImageUrls];
-        } else if (
+        if (
             Array.isArray(existingStamp.image_urls) &&
             existingStamp.image_urls.length > 0
         ) {
-            imageUrls = [...existingStamp.image_urls];
-        } else if (existingStamp.image_url) {
-            imageUrls = [existingStamp.image_url];
+
+            imageUrls = [
+                ...existingStamp.image_urls
+            ];
+
+        } else if (
+            existingStamp.image_url
+        ) {
+
+            imageUrls = [
+                existingStamp.image_url
+            ];
         }
     }
 }
@@ -2327,8 +2331,6 @@ const existingImageUrls =
 
 if (existingImageUrls.length > 0) {
 
-    window.editingImageUrls = [...existingImageUrls];
-
     const previewContainer =
         document.createElement("div");
 
@@ -2338,32 +2340,28 @@ if (existingImageUrls.length > 0) {
     previewContainer.className =
         "image-preview-container";
 
-    existingImageUrls.forEach((imageUrl, index) => {
-        const item = document.createElement("div");
-        item.className = "image-preview-item";
+    existingImageUrls.forEach(imageUrl => {
 
-        const preview = document.createElement("img");
-        preview.className = "image-preview";
-        preview.src = imageUrl;
-        preview.alt = `Stamp image ${index + 1}`;
+        const preview =
+            document.createElement("img");
 
-        const removeButton = document.createElement("button");
-        removeButton.type = "button";
-        removeButton.className = "remove-image-button";
-        removeButton.textContent = "Remove";
-        removeButton.setAttribute("aria-label", `Remove image ${index + 1}`);
-        removeButton.addEventListener("click", event => {
-            event.preventDefault();
-            event.stopPropagation();
-            window.editingImageUrls = window.editingImageUrls.filter(url => url !== imageUrl);
-            item.remove();
-        });
+        preview.className =
+            "image-preview";
 
-        item.append(preview, removeButton);
-        previewContainer.appendChild(item);
+        preview.src =
+            imageUrl;
+
+        preview.alt =
+            "Stamp image";
+
+        previewContainer.appendChild(
+            preview
+        );
     });
 
-    stampImageInput.parentElement.after(previewContainer);
+    stampImageInput.parentElement.appendChild(
+        previewContainer
+    );
 }
 
 
@@ -2756,9 +2754,6 @@ const image =
             ? categories.join(" · ")
             : "";
 
-    const locationIcon = `<svg class="modal-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>`;
-    const dateIcon = `<svg class="modal-info-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>`;
-    const categoryIcon = `<svg class="modal-info-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20.6 13.4-7.2 7.2a2 2 0 0 1-2.8 0L3 13V4h9l8.6 6.6a2 2 0 0 1 0 2.8Z"></path><circle cx="7.5" cy="8.5" r="1"></circle></svg>`;
 
     modalContent.innerHTML = `
 
@@ -2776,13 +2771,13 @@ const image =
 
             ${
                 stamp.location
-                    ? `${locationIcon} ${stamp.location}<br>`
+                    ? `📍 ${stamp.location}<br>`
                     : ""
             }
 
             ${
                 stamp.collection_date
-                    ? `${dateIcon} ${formatDate(
+                    ? `📅 ${formatDate(
                         stamp.collection_date
                     )}<br>`
                     : ""
@@ -2790,7 +2785,7 @@ const image =
 
             ${
                 categoryText
-                    ? `${categoryIcon} ${categoryText}<br>`
+                    ? `🏷️ ${categoryText}<br>`
                     : ""
             }
 
@@ -2805,7 +2800,6 @@ const image =
 
 
     modal.style.display = "flex";
-    document.body.classList.add("stamp-modal-open");
 }
 
 function changeModalImage(imageUrl, thumbnail) {
@@ -2917,8 +2911,9 @@ function changeModalImageByStep(step) {
 
 document.getElementById("modalClose")
     .addEventListener("click", () => {
-        document.getElementById("stampModal").style.display = "none";
-        document.body.classList.remove("stamp-modal-open");
+
+        document.getElementById("stampModal")
+            .style.display = "none";
     });
 
 
@@ -2931,7 +2926,6 @@ document.getElementById("stampModal")
 
             document.getElementById("stampModal")
                 .style.display = "none";
-            document.body.classList.remove("stamp-modal-open");
         }
     });
 
